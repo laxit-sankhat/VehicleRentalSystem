@@ -1,0 +1,49 @@
+﻿@model List<VehicleRentalSystem.Models.Vehicle>
+
+@{
+    ViewData["Title"] = "Manage Vehicles";
+}
+
+<h2>Manage Vehicles</h2>
+
+<a asp-action="Create" class="btn btn-primary mb-3">+ Add New Vehicle</a>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Price/Day</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var vehicle in Model)
+        {
+            <tr>
+                <td>@vehicle.Name</td>
+                <td>@vehicle.Type</td>
+                <td>₹@vehicle.PricePerDay</td>
+                <td>
+                    @if (vehicle.IsUnderMaintenance)
+                    {
+                        <span class="badge bg-warning">Under Maintenance</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-success">Available</span>
+                    }
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@vehicle.Id" class="btn btn-sm btn-secondary">Edit</a>
+
+                    <form asp-action="Delete" asp-route-id="@vehicle.Id" method="post" style="display:inline"
+                          onsubmit="return confirm('Are you sure you want to remove this vehicle?');">
+                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

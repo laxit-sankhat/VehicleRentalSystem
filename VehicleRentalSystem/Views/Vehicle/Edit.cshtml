@@ -1,0 +1,44 @@
+﻿@model VehicleRentalSystem.Models.Vehicle
+
+@{
+    ViewData["Title"] = "Edit Vehicle";
+}
+
+<h2>Edit Vehicle</h2>
+
+<form asp-action="Edit" asp-route-id="@Model.Id" method="post">
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <input type="hidden" asp-for="Id" />
+
+    <div class="form-group">
+        <label asp-for="Name"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Type"></label>
+        <select asp-for="Type" class="form-control"
+                asp-items="Html.GetEnumSelectList<VehicleRentalSystem.Models.VehicleType>()">
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="PricePerDay"></label>
+        <input asp-for="PricePerDay" class="form-control" />
+        <span asp-validation-for="PricePerDay" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="ImageUrl">Image URL</label>
+        <input asp-for="ImageUrl" class="form-control" />
+    </div>
+
+    <div class="form-check">
+        <input asp-for="IsUnderMaintenance" class="form-check-input" />
+        <label asp-for="IsUnderMaintenance" class="form-check-label">Under Maintenance</label>
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-2">Save Changes</button>
+</form>

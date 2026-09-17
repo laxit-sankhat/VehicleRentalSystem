@@ -1,0 +1,15 @@
+﻿## .NET / Visual Studio
+bin/
+obj/
+.vs/
+*.user
+*.suo
+
+## Database (each dev regenerates via migrations)
+*.db
+*.db-shm
+*.db-wal
+
+## OS files
+.DS_Store
+Thumbs.db
