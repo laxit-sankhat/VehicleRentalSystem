@@ -1,48 +1,42 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-using VehicleRentalSystem.Data;
 using VehicleRentalSystem.Models;
+using VehicleRentalSystem.Repositories.Interfaces;
 
 namespace VehicleRentalSystem.Controllers
 {
     public class AuthController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IUserRepository _userRepository;
 
-        public AuthController(ApplicationDbContext context)
+        public AuthController(IUserRepository userRepository)
         {
-            _context = context;
+            _userRepository = userRepository;
         }
 
-        // GET: /Auth/Register
         [HttpGet]
         public IActionResult Register()
         {
             return View();
         }
 
-        // POST: /Auth/Register
         [HttpPost]
         public async Task<IActionResult> Register(User model, string password)
         {
-            ModelState.Remove("PasswordHash"); // we set this manually below, not from the form
+            ModelState.Remove("PasswordHash");
 
             if (!ModelState.IsValid)
                 return View(model);
 
-            // Check if email already exists
-            bool emailExists = await _context.Users.AnyAsync(u => u.Email == model.Email);
+            bool emailExists = await _userRepository.EmailExistsAsync(model.Email);
             if (emailExists)
             {
                 ModelState.AddModelError("Email", "This email is already registered.");
                 return View(model);
             }
 
-            // Age validation (must be 18+)
             if (model.DateOfBirth.HasValue)
             {
                 int age = DateTime.Today.Year - model.DateOfBirth.Value.Year;
@@ -56,26 +50,23 @@ namespace VehicleRentalSystem.Controllers
             }
 
             model.PasswordHash = BCrypt.Net.BCrypt.HashPassword(password);
-            model.Role = UserRole.Customer; // registration is always Customer
+            model.Role = UserRole.Customer;
 
-            _context.Users.Add(model);
-            await _context.SaveChangesAsync();
+            await _userRepository.AddAsync(model);
 
             return RedirectToAction("Login");
         }
 
-        // GET: /Auth/Login
         [HttpGet]
         public IActionResult Login()
         {
             return View();
         }
 
-        // POST: /Auth/Login
         [HttpPost]
         public async Task<IActionResult> Login(string email, string password)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            var user = await _userRepository.GetByEmailAsync(email);
 
             if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
             {
@@ -96,12 +87,11 @@ namespace VehicleRentalSystem.Controllers
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
             if (user.Role == UserRole.Admin)
-                return RedirectToAction("Index", "AdminDashboard"); // we'll create this later
+                return RedirectToAction("Index", "AdminDashboard");
             else
                 return RedirectToAction("Index", "Home");
         }
 
-        // POST: /Auth/Logout
         [HttpPost]
         public async Task<IActionResult> Logout()
         {

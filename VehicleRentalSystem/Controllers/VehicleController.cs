@@ -1,85 +1,75 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using VehicleRentalSystem.Data;
 using VehicleRentalSystem.Models;
+using VehicleRentalSystem.Repositories.Interfaces;
 
 namespace VehicleRentalSystem.Controllers
 {
     [Authorize(Roles = "Admin")]
     public class VehicleController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IVehicleRepository _vehicleRepository;
 
-        public VehicleController(ApplicationDbContext context)
+        public VehicleController(IVehicleRepository vehicleRepository)
         {
-            _context = context;
+            _vehicleRepository = vehicleRepository;
         }
 
-        // GET: /Vehicle
         public async Task<IActionResult> Index()
         {
-            var vehicles = await _context.Vehicles
-                .Where(v => v.IsActive)   // hide soft-deleted vehicles
-                .ToListAsync();
-
+            var vehicles = await _vehicleRepository.GetAllActiveAsync();
             return View(vehicles);
         }
 
-        // GET: /Vehicle/Create
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: /Vehicle/Create
         [HttpPost]
-        public async Task<IActionResult> Create(Vehicle model)
+        public async Task<IActionResult> Create(Vehicle vehicle)
         {
             if (!ModelState.IsValid)
-                return View(model);
+                return View(vehicle);
 
-            _context.Vehicles.Add(model);
-            await _context.SaveChangesAsync();
-
+            await _vehicleRepository.AddAsync(vehicle);
             return RedirectToAction("Index");
         }
 
-        // GET: /Vehicle/Edit/5
         public async Task<IActionResult> Edit(int id)
         {
-            var vehicle = await _context.Vehicles.FindAsync(id);
+            var vehicle = await _vehicleRepository.GetByIdAsync(id);
             if (vehicle == null) return NotFound();
 
             return View(vehicle);
         }
 
-        // POST: /Vehicle/Edit/5
         [HttpPost]
-        public async Task<IActionResult> Edit(int id, Vehicle model)
+        public async Task<IActionResult> Edit(int id, Vehicle vehicle)
         {
-            if (id != model.Id) return BadRequest();
+            if (id != vehicle.Id) return BadRequest();
 
             if (!ModelState.IsValid)
-                return View(model);
+                return View(vehicle);
 
-            _context.Vehicles.Update(model);
-            await _context.SaveChangesAsync();
-
+            await _vehicleRepository.UpdateAsync(vehicle);
             return RedirectToAction("Index");
         }
 
-        // POST: /Vehicle/Delete/5  (soft delete)
         [HttpPost]
         public async Task<IActionResult> Delete(int id)
         {
-            var vehicle = await _context.Vehicles.FindAsync(id);
-            if (vehicle == null) return NotFound();
-
-            vehicle.IsActive = false;   // soft delete, not real removal
-            await _context.SaveChangesAsync();
-
+            await _vehicleRepository.SoftDeleteAsync(id);
             return RedirectToAction("Index");
+        }
+
+        [AllowAnonymous]
+        public async Task<IActionResult> Browse()
+        {
+            var vehicles = await _vehicleRepository.GetAllActiveAsync();
+            var availableVehicles = vehicles.Where(v => !v.IsUnderMaintenance).ToList();
+
+            return View(availableVehicles);
         }
     }
 }

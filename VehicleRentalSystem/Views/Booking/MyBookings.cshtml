@@ -1,0 +1,70 @@
+﻿@model List<VehicleRentalSystem.Models.Booking>
+
+@{
+    ViewData["Title"] = "My Bookings";
+}
+
+<h2>My Bookings</h2>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+@if (!Model.Any())
+{
+    <p class="text-muted">You haven't booked any vehicles yet.</p>
+}
+else
+{
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Vehicle</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>Total Price</th>
+                <th>Late Fee</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var booking in Model)
+            {
+                <tr>
+                    <td>@booking.Vehicle?.Name (@booking.Vehicle?.Model)</td>
+                    <td>@booking.StartDate.ToString("dd MMM yyyy")</td>
+                    <td>@booking.EndDate.ToString("dd MMM yyyy")</td>
+                    <td>₹@booking.TotalPrice</td>
+                    <td>₹@booking.LateFee</td>
+                    <td>
+                        <span class="badge bg-@(booking.Status == VehicleRentalSystem.Models.BookingStatus.Cancelled ? "danger" : booking.Status == VehicleRentalSystem.Models.BookingStatus.Completed ? "secondary" : "success")">
+                            @booking.Status
+                        </span>
+                    </td>
+                    <td>
+                        @{
+                            bool withinGracePeriod = DateTime.Now <= booking.CreatedAt.AddMinutes(15);
+                            bool outside24HourWindow = booking.StartDate > DateTime.Now.AddHours(24);
+                            bool isFinal = booking.Status == VehicleRentalSystem.Models.BookingStatus.Completed ||
+                                           booking.Status == VehicleRentalSystem.Models.BookingStatus.Cancelled;
+                            bool canCancel = !isFinal && (withinGracePeriod || outside24HourWindow);
+                        }
+                        @if (canCancel)
+                        {
+                            <form asp-action="Cancel" asp-route-id="@booking.Id" method="post"
+                                  onsubmit="return confirm('Cancel this booking?');">
+                                <button type="submit" class="btn btn-sm btn-danger">Cancel</button>
+                            </form>
+                        }
+                        else if (!isFinal)
+                        {
+                            <span class="text-muted small">Cannot cancel (within 24 hrs)</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

@@ -1,0 +1,52 @@
+﻿@model List<VehicleRentalSystem.Models.Vehicle>
+
+@{
+    ViewData["Title"] = "Browse Vehicles";
+}
+
+<h2 class="mb-4">Browse Vehicles</h2>
+
+<div class="row row-cols-1 row-cols-md-3 g-4">
+    @foreach (var vehicle in Model)
+    {
+        <div class="col">
+            <div class="card h-100">
+                @if (!string.IsNullOrEmpty(vehicle.ImageUrl))
+                {
+                    <img src="@vehicle.ImageUrl" class="card-img-top" alt="@vehicle.Name" style="height:200px; object-fit:cover;" />
+                }
+                else
+                {
+                    <div class="bg-secondary text-white d-flex align-items-center justify-content-center" style="height:200px;">
+                        No Image
+                    </div>
+                }
+
+                <div class="card-body">
+                    <h5 class="card-title">@vehicle.Name</h5>
+                    <p class="card-text text-muted mb-1">@vehicle.Model &middot; @vehicle.Type</p>
+                    <p class="card-text mb-1">Seats: @vehicle.Capacity | Mileage: @vehicle.Mileage km/l</p>
+                    @if (vehicle.HasSunroof)
+                    {
+                        <span class="badge bg-info text-dark mb-2">Sunroof</span>
+                    }
+                    <p class="card-text fw-bold">₹@vehicle.PricePerDay / day</p>
+
+                    @if (User.Identity != null && User.Identity.IsAuthenticated && User.IsInRole("Customer"))
+                    {
+                        <a asp-controller="Booking" asp-action="Create" asp-route-vehicleId="@vehicle.Id" class="btn btn-primary w-100">Book Now</a>
+                    }
+                    else if (!(User.Identity?.IsAuthenticated ?? false))
+                    {
+                        <a asp-controller="Auth" asp-action="Login" class="btn btn-outline-primary w-100">Login to Book</a>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@if (!Model.Any())
+{
+    <p class="text-muted">No vehicles available right now.</p>
+}

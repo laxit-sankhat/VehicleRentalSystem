@@ -18,10 +18,32 @@
     </div>
 
     <div class="form-group">
+        <label asp-for="Model"></label>
+        <input asp-for="Model" class="form-control" />
+        <span asp-validation-for="Model" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
         <label asp-for="Type"></label>
         <select asp-for="Type" class="form-control"
                 asp-items="Html.GetEnumSelectList<VehicleRentalSystem.Models.VehicleType>()">
         </select>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Capacity">Seating Capacity</label>
+        <input asp-for="Capacity" type="number" class="form-control" />
+        <span asp-validation-for="Capacity" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Mileage">Mileage (km/l)</label>
+        <input asp-for="Mileage" type="number" step="0.01" class="form-control" />
+    </div>
+
+    <div class="form-check">
+        <input asp-for="HasSunroof" class="form-check-input" />
+        <label asp-for="HasSunroof" class="form-check-label">Has Sunroof</label>
     </div>
 
     <div class="form-group">

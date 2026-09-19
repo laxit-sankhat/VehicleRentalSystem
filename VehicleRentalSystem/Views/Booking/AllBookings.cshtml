@@ -1,0 +1,47 @@
+﻿@model List<VehicleRentalSystem.Models.Booking>
+
+@{
+    ViewData["Title"] = "All Bookings";
+}
+
+<h2>All Bookings</h2>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Customer</th>
+            <th>Vehicle</th>
+            <th>Start</th>
+            <th>End</th>
+            <th>Actual Return</th>
+            <th>Total Price</th>
+            <th>Late Fee</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var booking in Model)
+        {
+            <tr>
+                <td>@booking.User?.Name</td>
+                <td>@booking.Vehicle?.Name</td>
+                <td>@booking.StartDate.ToString("dd MMM yyyy")</td>
+                <td>@booking.EndDate.ToString("dd MMM yyyy")</td>
+                <td>@(booking.ActualReturnDate?.ToString("dd MMM yyyy, hh:mm tt") ?? "-")</td>
+                <td>₹@booking.TotalPrice</td>
+                <td>₹@booking.LateFee</td>
+                <td>@booking.Status</td>
+                <td>
+                    @if (booking.Status == VehicleRentalSystem.Models.BookingStatus.Upcoming ||
+                         booking.Status == VehicleRentalSystem.Models.BookingStatus.Ongoing)
+                    {
+                        <form asp-action="MarkAsReturned" asp-route-id="@booking.Id" method="post">
+                            <button type="submit" class="btn btn-sm btn-success">Mark as Returned</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

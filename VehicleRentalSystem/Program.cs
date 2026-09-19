@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using VehicleRentalSystem.Data;
 using VehicleRentalSystem.Models;
+using VehicleRentalSystem.Repositories.Interfaces;
+using VehicleRentalSystem.Repositories.Implementations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,23 +21,25 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 builder.Services.AddDbContext<ApplicationDbContext>(options => 
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IVehicleRepository, VehicleRepository>();
+builder.Services.AddScoped<IBookingRepository, BookingRepository>();
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
 
-    if (!db.Users.Any(u => u.Role == UserRole.Admin))
+    if (!await userRepository.AnyAdminExistsAsync())
     {
-        db.Users.Add(new User
+        await userRepository.AddAsync(new User
         {
             Name = "Laxit",
             Email = "laxitsankhat@gmail.com",
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123"),
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("laxit@123"),
             Role = UserRole.Admin
         });
-
-        db.SaveChanges();
     }
 }
 
@@ -46,13 +50,14 @@ app.UseAuthorization();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    // The default HSTS value is 30 days. 
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
