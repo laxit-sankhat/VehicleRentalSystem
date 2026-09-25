@@ -4,6 +4,9 @@ using VehicleRentalSystem.Data;
 using VehicleRentalSystem.Models;
 using VehicleRentalSystem.Repositories.Interfaces;
 using VehicleRentalSystem.Repositories.Implementations;
+using QuestPDF.Infrastructure;
+
+QuestPDF.Settings.License = LicenseType.Community;
 
 var builder = WebApplication.CreateBuilder(args);
 

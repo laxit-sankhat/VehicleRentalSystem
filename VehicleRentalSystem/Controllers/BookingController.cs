@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using QuestPDF.Fluent;
 using System.Security.Claims;
 using VehicleRentalSystem.Models;
 using VehicleRentalSystem.Repositories.Interfaces;
@@ -190,7 +191,7 @@ namespace VehicleRentalSystem.Controllers
             var actualReturn = DateTime.Now;
             decimal lateFee = 0;
 
-            // Option A: end-of-day cutoff — late only if returned on a LATER calendar date
+            // end-of-day cutoff — late only if returned on a LATER calendar date
             if (actualReturn.Date > booking.EndDate.Date)
             {
                 int lateDays = (actualReturn.Date - booking.EndDate.Date).Days;
@@ -200,6 +201,83 @@ namespace VehicleRentalSystem.Controllers
             await _bookingRepository.MarkAsReturnedAsync(id, lateFee);
 
             return RedirectToAction("AllBookings");
+        }
+
+        [Authorize]
+        public async Task<IActionResult> Details(int id)
+        {
+            var booking = await _bookingRepository.GetByIdAsync(id);
+            if (booking == null) return NotFound();
+
+            // Security: a Customer can only view their OWN booking
+            if (User.IsInRole("Customer"))
+            {
+                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+                if (booking.UserId != userId)
+                    return Forbid();
+            }
+
+            return View(booking);
+        }
+
+        [Authorize]
+        public async Task<IActionResult> DownloadInvoice(int id)
+        {
+            var booking = await _bookingRepository.GetByIdAsync(id);
+            if (booking == null || booking.Status != BookingStatus.Completed) return NotFound();
+
+            if (User.IsInRole("Customer"))
+            {
+                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+                if (booking.UserId != userId) return Forbid();
+            }
+
+            var pdfBytes = GenerateInvoicePdf(booking);
+            return File(pdfBytes, "application/pdf", $"Invoice_Booking{booking.Id}.pdf");
+        }
+
+        private byte[] GenerateInvoicePdf(Booking booking)
+        {
+            using var stream = new MemoryStream();
+
+            QuestPDF.Fluent.Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Margin(40);
+
+                    page.Header().Text("Vehicle Rental System - Invoice")
+                        .FontSize(20).Bold();
+
+                    page.Content().Column(col =>
+                    {
+                        col.Spacing(10);
+
+                        col.Item().Text($"Invoice for Booking #{booking.Id}").FontSize(14).Bold();
+                        col.Item().Text($"Vehicle: {booking.Vehicle?.Name} ({booking.Vehicle?.Model})");
+                        col.Item().Text($"Rental Period: {booking.StartDate:dd MMM yyyy} to {booking.EndDate:dd MMM yyyy}");
+                        col.Item().Text($"Actual Return: {booking.ActualReturnDate:dd MMM yyyy hh:mm tt}");
+
+                        col.Item().PaddingTop(15).LineHorizontal(1);
+
+                        col.Item().Text($"Base Rental Price: ₹{booking.TotalPrice}");
+                        col.Item().Text($"Late Fee: ₹{booking.LateFee}");
+                        col.Item().Text($"Total Paid: ₹{booking.TotalPrice + booking.LateFee}")
+                            .FontSize(14).Bold();
+
+                        col.Item().PaddingTop(20).Text("Thank you for choosing our service!")
+                            .Italic();
+                    });
+
+                    page.Footer().AlignCenter().Text(x =>
+                    {
+                        x.Span("Generated on ").FontSize(9);
+                        x.Span(DateTime.Now.ToString("dd MMM yyyy")).FontSize(9);
+                    });
+                });
+            }).GeneratePdf(stream);
+
+            return stream.ToArray();
         }
     }
 }

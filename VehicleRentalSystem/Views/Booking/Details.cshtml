@@ -1,0 +1,29 @@
+﻿@model VehicleRentalSystem.Models.Booking
+
+@{
+    ViewData["Title"] = "Booking Details";
+}
+
+<h2>Booking #@Model.Id</h2>
+
+<div class="card" style="max-width:600px;">
+    <div class="card-body">
+        <h5>@Model.Vehicle?.Name (@Model.Vehicle?.Model)</h5>
+        <table class="table table-borderless mb-0">
+            <tr><th>Start Date</th><td>@Model.StartDate.ToString("dd MMM yyyy")</td></tr>
+            <tr><th>End Date</th><td>@Model.EndDate.ToString("dd MMM yyyy")</td></tr>
+            <tr><th>Actual Return</th><td>@(Model.ActualReturnDate?.ToString("dd MMM yyyy, hh:mm tt") ?? "-")</td></tr>
+            <tr><th>Base Price</th><td>₹@Model.TotalPrice</td></tr>
+            <tr><th>Late Fee</th><td>₹@Model.LateFee</td></tr>
+            <tr><th>Total Payable</th><td class="fw-bold">₹@(Model.TotalPrice + Model.LateFee)</td></tr>
+            <tr><th>Status</th><td>@Model.Status</td></tr>
+        </table>
+    </div>
+</div>
+
+@if (Model.Status == VehicleRentalSystem.Models.BookingStatus.Completed)
+{
+    <a asp-action="DownloadInvoice" asp-route-id="@Model.Id" class="btn btn-success mt-3">Download Invoice (PDF)</a>
+}
+
+<a asp-action="@(User.IsInRole("Admin") ? "AllBookings" : "MyBookings")" class="btn btn-link mt-3">← Back</a>
