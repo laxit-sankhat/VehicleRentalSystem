@@ -1,0 +1,46 @@
+﻿@model VehicleRentalSystem.Models.User
+
+@{
+    ViewData["Title"] = "My Profile";
+}
+
+<h2>My Profile</h2>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+<form asp-action="Profile" method="post" style="max-width:500px;">
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <input type="hidden" asp-for="Id" />
+
+    <div class="form-group mb-3">
+        <label>Email (cannot be changed)</label>
+        <input value="@Model.Email" class="form-control" disabled />
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="Name"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="Phone"></label>
+        <input asp-for="Phone" class="form-control" />
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="DLNumber">Driving License Number</label>
+        <input asp-for="DLNumber" class="form-control" />
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="DLExpiryDate"></label>
+        <input asp-for="DLExpiryDate" type="date" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save Changes</button>
+</form>

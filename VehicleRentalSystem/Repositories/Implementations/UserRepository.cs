@@ -39,5 +39,11 @@ namespace VehicleRentalSystem.Repositories.Implementations
         {
             return await _context.Users.AnyAsync(u => u.Role == UserRole.Admin);
         }
+
+        public async Task UpdateAsync(User user)
+        {
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+        }
     }
 }

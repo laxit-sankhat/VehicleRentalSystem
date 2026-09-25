@@ -45,5 +45,23 @@ namespace VehicleRentalSystem.Repositories.Implementations
                 await _context.SaveChangesAsync();
             }
         }
+
+        public async Task<List<Vehicle>> SearchAsync(VehicleType? type, decimal? minPrice, decimal? maxPrice)
+        {
+            var query = _context.Vehicles
+                .Where(v => v.IsActive && !v.IsUnderMaintenance)
+                .AsQueryable();
+
+            if (type.HasValue)
+                query = query.Where(v => v.Type == type.Value);
+
+            if (minPrice.HasValue)
+                query = query.Where(v => v.PricePerDay >= minPrice.Value);
+
+            if (maxPrice.HasValue)
+                query = query.Where(v => v.PricePerDay <= maxPrice.Value);
+
+            return await query.ToListAsync();
+        }
     }
 }

@@ -1,0 +1,75 @@
+﻿@model VehicleRentalSystem.Models.AdminDashboardViewModel
+
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<h2 class="mb-4">Dashboard</h2>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h6>Total Revenue</h6>
+                <h3>₹@Model.TotalRevenue</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <h6>Active Rentals</h6>
+                <h3>@Model.ActiveRentals</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <h6>Total Bookings</h6>
+                <h3>@Model.TotalBookings</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <h6>Most Booked</h6>
+                <h5>@Model.MostBookedVehicleName</h5>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <h5>Bookings per Vehicle</h5>
+        <canvas id="bookingsChart" height="100"></canvas>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx = document.getElementById('bookingsChart');
+
+        const labels = @Html.Raw(Json.Serialize(Model.VehicleBookingCounts.Select(v => v.VehicleName)));
+        const data = @Html.Raw(Json.Serialize(Model.VehicleBookingCounts.Select(v => v.Count)));
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Bookings',
+                    data: data,
+                    backgroundColor: '#0d6efd'
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+            }
+        });
+    </script>
+}

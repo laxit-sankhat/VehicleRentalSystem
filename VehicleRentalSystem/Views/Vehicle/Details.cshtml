@@ -1,0 +1,63 @@
+﻿@model VehicleRentalSystem.Models.Vehicle
+
+@{
+    ViewData["Title"] = $"{Model.Name} - Details";
+}
+
+<div class="row">
+    <div class="col-md-6">
+        @if (!string.IsNullOrEmpty(Model.ImageUrl))
+        {
+            <img src="@Model.ImageUrl" class="img-fluid rounded" alt="@Model.Name" />
+        }
+        else
+        {
+            <div class="bg-secondary text-white d-flex align-items-center justify-content-center rounded" style="height:350px;">
+                No Image Available
+            </div>
+        }
+    </div>
+
+    <div class="col-md-6">
+        <h2>@Model.Name</h2>
+        <p class="text-muted fs-5">@Model.Model</p>
+
+        <table class="table table-borderless">
+            <tr>
+                <th>Type</th>
+                <td>@Model.Type</td>
+            </tr>
+            <tr>
+                <th>Seating Capacity</th>
+                <td>@Model.Capacity</td>
+            </tr>
+            <tr>
+                <th>Mileage</th>
+                <td>@Model.Mileage km/l</td>
+            </tr>
+            <tr>
+                <th>Sunroof</th>
+                <td>@(Model.HasSunroof ? "Yes" : "No")</td>
+            </tr>
+            <tr>
+                <th>Price</th>
+                <td class="fw-bold fs-5">₹@Model.PricePerDay / day</td>
+            </tr>
+        </table>
+
+        @if (Model.IsUnderMaintenance)
+        {
+            <div class="alert alert-warning">This vehicle is currently under maintenance and not available for booking.</div>
+        }
+        else if (User.Identity != null && User.Identity.IsAuthenticated && User.IsInRole("Customer"))
+        {
+            <a asp-controller="Booking" asp-action="Create" asp-route-vehicleId="@Model.Id" class="btn btn-primary btn-lg">Book Now</a>
+        }
+        else if (!(User.Identity?.IsAuthenticated ?? false))
+        {
+            <a asp-controller="Auth" asp-action="Login" class="btn btn-outline-primary btn-lg">Login to Book</a>
+        }
+
+        <a asp-controller="Vehicle" asp-action="Browse" class="btn btn-link">← Back to Browse</a>
+    </div>
+</div>

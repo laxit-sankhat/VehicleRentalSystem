@@ -9,5 +9,6 @@ namespace VehicleRentalSystem.Repositories.Interfaces
         Task<bool> EmailExistsAsync(string email);
         Task AddAsync(User user);
         Task<bool> AnyAdminExistsAsync();
+        Task UpdateAsync(User user);
     }
 }

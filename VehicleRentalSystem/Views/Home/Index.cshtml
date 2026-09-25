@@ -1,8 +1,32 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="text-center py-5 mb-5" style="background-color:#0d6efd; color:white; border-radius:10px;">
+    <h1 class="display-4 fw-bold">Rent the Ride You Need</h1>
+    <p class="lead">Cars and bikes, ready when you are — book in minutes.</p>
+    <a asp-controller="Vehicle" asp-action="Browse" class="btn btn-light btn-lg mt-3">Browse Vehicles</a>
 </div>
+
+<div class="row text-center mb-5">
+    <div class="col-md-4">
+        <h3>1. Browse</h3>
+        <p class="text-muted">Explore our range of cars and bikes with transparent pricing.</p>
+    </div>
+    <div class="col-md-4">
+        <h3>2. Book</h3>
+        <p class="text-muted">Pick your dates. We instantly check availability for you.</p>
+    </div>
+    <div class="col-md-4">
+        <h3>3. Drive</h3>
+        <p class="text-muted">Pick up your vehicle and hit the road.</p>
+    </div>
+</div>
+
+@if (User.Identity != null && User.Identity.IsAuthenticated && User.IsInRole("Customer"))
+{
+    <div class="alert alert-light border text-center">
+        Welcome back, @User.Identity.Name! Check your
+        <a asp-controller="Booking" asp-action="MyBookings">current bookings</a>.
+    </div>
+}

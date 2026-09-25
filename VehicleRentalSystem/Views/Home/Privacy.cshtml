@@ -1,6 +1,38 @@
 ﻿@{
     ViewData["Title"] = "Privacy Policy";
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<h2>Privacy Policy</h2>
+<p class="text-muted">Last updated: @DateTime.Now.ToString("MMMM yyyy")</p>
+
+<h5 class="mt-4">Information We Collect</h5>
+<p>
+    To provide our vehicle rental services, we collect your name, email, phone number,
+    date of birth, and driving license details (number and expiry date). This information
+    is used solely to verify eligibility to rent a vehicle and to manage your bookings.
+</p>
+
+<h5 class="mt-4">How We Use Your Information</h5>
+<p>
+    Your information is used to create and manage your account, process bookings,
+    calculate rental charges, and verify your eligibility to drive (age and valid license)
+    before confirming a booking.
+</p>
+
+<h5 class="mt-4">Data Security</h5>
+<p>
+    Passwords are never stored in plain text — they are hashed using industry-standard
+    BCrypt hashing before being saved. We do not share your personal information with
+    third parties.
+</p>
+
+<h5 class="mt-4">Your Data</h5>
+<p>
+    You may contact the site administrator to review, update, or request deletion of
+    your personal information at any time.
+</p>
+
+<p class="text-muted mt-4">
+    This is a college academic project. This policy is provided for demonstration
+    purposes and reflects the data handling practices implemented in this system.
+</p>

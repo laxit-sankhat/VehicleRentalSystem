@@ -6,6 +6,27 @@
 
 <h2 class="mb-4">Browse Vehicles</h2>
 
+<form method="get" class="row g-2 mb-4">
+    <div class="col-md-3">
+        <select name="type" class="form-select">
+            <option value="">All Types</option>
+            @foreach (var t in Enum.GetValues(typeof(VehicleRentalSystem.Models.VehicleType)))
+            {
+                <option value="@t" selected="@(ViewBag.SelectedType?.ToString() == t.ToString())">@t</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-3">
+        <input type="number" name="minPrice" class="form-control" placeholder="Min Price" value="@ViewBag.MinPrice" />
+    </div>
+    <div class="col-md-3">
+        <input type="number" name="maxPrice" class="form-control" placeholder="Max Price" value="@ViewBag.MaxPrice" />
+    </div>
+    <div class="col-md-3">
+        <button type="submit" class="btn btn-primary w-100">Filter</button>
+    </div>
+</form>
+
 <div class="row row-cols-1 row-cols-md-3 g-4">
     @foreach (var vehicle in Model)
     {
@@ -31,6 +52,8 @@
                         <span class="badge bg-info text-dark mb-2">Sunroof</span>
                     }
                     <p class="card-text fw-bold">₹@vehicle.PricePerDay / day</p>
+
+                    <a asp-controller="Vehicle" asp-action="Details" asp-route-id="@vehicle.Id" class="btn btn-outline-secondary w-100 mb-2">View Details</a>
 
                     @if (User.Identity != null && User.Identity.IsAuthenticated && User.IsInRole("Customer"))
                     {

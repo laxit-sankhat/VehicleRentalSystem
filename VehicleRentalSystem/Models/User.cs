@@ -24,6 +24,8 @@ namespace VehicleRentalSystem.Models
 
         // Nullable because Admin doesn't need these
         public string? DLNumber { get; set; }
+
+        public DateTime? DLExpiryDate { get; set; }
         public DateTime? DateOfBirth { get; set; }
 
         // Navigation property: one User can have many Bookings

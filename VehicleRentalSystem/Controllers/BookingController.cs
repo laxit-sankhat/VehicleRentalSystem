@@ -67,10 +67,27 @@ namespace VehicleRentalSystem.Controllers
                 }
             }
 
-            // --- Validation 3: DL required ---
+            // --- Validation 3: DL required, valid format, not expired ---
             if (string.IsNullOrWhiteSpace(user.DLNumber))
             {
                 ModelState.AddModelError("", "A valid driving license number is required to book a vehicle.");
+                ViewBag.Vehicle = vehicle;
+                return View();
+            }
+
+            // Indian DL format: 2 letters (state) + 2 digits (RTO) + 4 digit year + 7 digits
+            // e.g. GJ01201912345 (with or without hyphens)
+            var dlPattern = @"^[A-Za-z]{2}[-\s]?\d{2}[-\s]?\d{4}[-\s]?\d{7}$";
+            if (!System.Text.RegularExpressions.Regex.IsMatch(user.DLNumber, dlPattern))
+            {
+                ModelState.AddModelError("", "Your driving license number format appears invalid. Please update your profile.");
+                ViewBag.Vehicle = vehicle;
+                return View();
+            }
+
+            if (!user.DLExpiryDate.HasValue || user.DLExpiryDate.Value.Date < DateTime.Today)
+            {
+                ModelState.AddModelError("", "Your driving license has expired or expiry date is missing. Please update your profile.");
                 ViewBag.Vehicle = vehicle;
                 return View();
             }

@@ -29,3 +29,65 @@ body {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
 }
+
+:root {
+    --brand-primary: #1c3d5a;
+    --brand-accent: #ff7b00;
+}
+
+body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+h1, h2, h3, h4, h5 {
+    font-weight: 600;
+}
+
+/* Navbar */
+.navbar {
+    background-color: var(--brand-primary) !important;
+}
+
+.navbar-brand, .nav-link {
+    color: #fff !important;
+}
+
+    .nav-link:hover {
+        color: var(--brand-accent) !important;
+    }
+
+/* Footer */
+footer.footer {
+    background-color: var(--brand-primary);
+    color: #fff;
+}
+
+    footer.footer a {
+        color: var(--brand-accent);
+    }
+
+/* Buttons */
+.btn-primary {
+    background-color: var(--brand-primary);
+    border-color: var(--brand-primary);
+}
+
+    .btn-primary:hover {
+        background-color: var(--brand-accent);
+        border-color: var(--brand-accent);
+    }
+
+/* Vehicle cards */
+.card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+    .card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    }
+
+footer.footer .text-muted,
+footer.footer {
+    color: #d0d8e0 !important;
+}

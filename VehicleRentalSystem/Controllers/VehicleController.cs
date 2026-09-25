@@ -64,12 +64,24 @@ namespace VehicleRentalSystem.Controllers
         }
 
         [AllowAnonymous]
-        public async Task<IActionResult> Browse()
+        public async Task<IActionResult> Details(int id)
         {
-            var vehicles = await _vehicleRepository.GetAllActiveAsync();
-            var availableVehicles = vehicles.Where(v => !v.IsUnderMaintenance).ToList();
+            var vehicle = await _vehicleRepository.GetByIdAsync(id);
+            if (vehicle == null || !vehicle.IsActive) return NotFound();
 
-            return View(availableVehicles);
+            return View(vehicle);
+        }
+
+        [AllowAnonymous]
+        public async Task<IActionResult> Browse(VehicleType? type, decimal? minPrice, decimal? maxPrice)
+        {
+            var vehicles = await _vehicleRepository.SearchAsync(type, minPrice, maxPrice);
+
+            ViewBag.SelectedType = type;
+            ViewBag.MinPrice = minPrice;
+            ViewBag.MaxPrice = maxPrice;
+
+            return View(vehicles);
         }
     }
 }

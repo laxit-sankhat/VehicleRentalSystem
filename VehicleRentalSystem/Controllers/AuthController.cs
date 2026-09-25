@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using VehicleRentalSystem.Models;
@@ -103,6 +104,44 @@ namespace VehicleRentalSystem.Controllers
         public IActionResult AccessDenied()
         {
             return View();
+        }
+
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> Profile()
+        {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null) return NotFound();
+
+            return View(user);
+        }
+
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> Profile(User model)
+        {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null) return NotFound();
+
+            ModelState.Remove("PasswordHash");
+            ModelState.Remove("Email");
+            ModelState.Remove("Role");
+
+            if (!ModelState.IsValid)
+                return View(model);
+
+            // Only update the fields the user is allowed to change
+            user.Name = model.Name;
+            user.Phone = model.Phone;
+            user.DLNumber = model.DLNumber;
+            user.DLExpiryDate = model.DLExpiryDate;
+
+            await _userRepository.UpdateAsync(user);
+
+            TempData["Success"] = "Profile updated successfully.";
+            return RedirectToAction("Profile");
         }
     }
 }
