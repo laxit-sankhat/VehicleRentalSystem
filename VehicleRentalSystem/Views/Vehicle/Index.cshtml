@@ -13,8 +13,12 @@
         <tr>
             <th>Name</th>
             <th>Model</th>
+            <th>Registration Number</th>
+            <th>Manufacturing Year</th>
             <th>Type</th>
             <th>Capacity</th>
+            <th>Fuel Type</th>
+            <th>Transmission</th>
             <th>Mileage</th>
             <th>Sunroof</th>
             <th>Price/Day</th>
@@ -28,8 +32,12 @@
             <tr>
                 <td>@vehicle.Name</td>
                 <td>@vehicle.Model</td>
+                <td>@vehicle.RegistrationNumber</td>
+                <td>@vehicle.ManufacturingYear</td>
                 <td>@vehicle.Type</td>
                 <td>@vehicle.Capacity</td>
+                <td>@vehicle.FuelType</td>
+                <td>@vehicle.Transmission</td>
                 <td>@vehicle.Mileage km/l</td>
                 <td>@(vehicle.HasSunroof ? "Yes" : "No")</td>
                 <td>₹@vehicle.PricePerDay</td>

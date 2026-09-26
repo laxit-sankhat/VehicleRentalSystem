@@ -6,6 +6,7 @@ namespace VehicleRentalSystem.Repositories.Interfaces
     {
         Task<List<Vehicle>> GetAllActiveAsync();
         Task<Vehicle?> GetByIdAsync(int id);
+        Task<bool> RegistrationNumberExistsAsync(string registrationNumber, int? excludeId = null);
         Task AddAsync(Vehicle vehicle);
         Task UpdateAsync(Vehicle vehicle);
         Task SoftDeleteAsync(int id);

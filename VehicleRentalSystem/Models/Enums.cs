@@ -9,7 +9,9 @@
     public enum VehicleType
     {
         Car,
-        Bike
+        Bike,
+        SUV,
+        Van
     }
 
     public enum BookingStatus
@@ -18,5 +20,20 @@
         Ongoing,
         Completed,
         Cancelled
+    }
+
+    public enum FuelType
+    {
+        Petrol,
+        Diesel,
+        Electric,
+        Hybrid
+    }
+
+    public enum TransmissionType
+    {
+        Manual,
+        Automatic,
+        CVT
     }
 }

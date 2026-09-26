@@ -63,5 +63,21 @@ namespace VehicleRentalSystem.Repositories.Implementations
 
             return await query.ToListAsync();
         }
+
+        public async Task<bool> RegistrationNumberExistsAsync(string registrationNumber, int? excludeId = null)
+        {
+            if (string.IsNullOrWhiteSpace(registrationNumber))
+                return false;
+
+            var reg = registrationNumber.Trim().ToUpper();
+
+            var query = _context.Vehicles
+                .Where(v => v.IsActive && v.RegistrationNumber != null && v.RegistrationNumber.ToUpper() == reg);
+
+            if (excludeId.HasValue)
+                query = query.Where(v => v.Id != excludeId.Value);
+
+            return await query.AnyAsync();
+        }
     }
 }

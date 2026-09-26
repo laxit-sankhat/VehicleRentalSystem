@@ -46,6 +46,8 @@
                 <div class="card-body">
                     <h5 class="card-title">@vehicle.Name</h5>
                     <p class="card-text text-muted mb-1">@vehicle.Model &middot; @vehicle.Type</p>
+                    <p class="card-text mb-1">Reg#: @vehicle.RegistrationNumber | Year: @vehicle.ManufacturingYear</p>
+                    <p class="card-text mb-1">Fuel: @vehicle.FuelType | Trans: @vehicle.Transmission</p>
                     <p class="card-text mb-1">Seats: @vehicle.Capacity | Mileage: @vehicle.Mileage km/l</p>
                     @if (vehicle.HasSunroof)
                     {
