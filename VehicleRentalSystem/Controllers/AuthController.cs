@@ -1,20 +1,19 @@
-﻿using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 using VehicleRentalSystem.Models;
-using VehicleRentalSystem.Repositories.Interfaces;
 
 namespace VehicleRentalSystem.Controllers
 {
     public class AuthController : Controller
     {
-        private readonly IUserRepository _userRepository;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
 
-        public AuthController(IUserRepository userRepository)
+        public AuthController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
         {
-            _userRepository = userRepository;
+            _userManager = userManager;
+            _signInManager = signInManager;
         }
 
         [HttpGet]
@@ -24,19 +23,15 @@ namespace VehicleRentalSystem.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Register(User model, string password)
+        public async Task<IActionResult> Register(ApplicationUser model, string password)
         {
+            ModelState.Remove("UserName");
             ModelState.Remove("PasswordHash");
+            ModelState.Remove("PhoneNumber");
+            ModelState.Remove("Email");
 
             if (!ModelState.IsValid)
                 return View(model);
-
-            bool emailExists = await _userRepository.EmailExistsAsync(model.Email);
-            if (emailExists)
-            {
-                ModelState.AddModelError("Email", "This email is already registered.");
-                return View(model);
-            }
 
             if (model.DateOfBirth.HasValue)
             {
@@ -50,10 +45,19 @@ namespace VehicleRentalSystem.Controllers
                 }
             }
 
-            model.PasswordHash = BCrypt.Net.BCrypt.HashPassword(password);
-            model.Role = UserRole.Customer;
+            model.UserName = model.Email;
 
-            await _userRepository.AddAsync(model);
+            var result = await _userManager.CreateAsync(model, password);
+
+            if (!result.Succeeded)
+            {
+                foreach (var error in result.Errors)
+                    ModelState.AddModelError("", error.Description);
+
+                return View(model);
+            }
+
+            await _userManager.AddToRoleAsync(model, "Customer");
 
             return RedirectToAction("Login");
         }
@@ -67,27 +71,22 @@ namespace VehicleRentalSystem.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(string email, string password)
         {
-            var user = await _userRepository.GetByEmailAsync(email);
-
-            if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
             {
                 ViewBag.Error = "Invalid email or password.";
                 return View();
             }
 
-            var claims = new List<Claim>
+            var result = await _signInManager.PasswordSignInAsync(user, password, isPersistent: false, lockoutOnFailure: false);
+
+            if (!result.Succeeded)
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.Name),
-                new Claim(ClaimTypes.Role, user.Role.ToString())
-            };
+                ViewBag.Error = "Invalid email or password.";
+                return View();
+            }
 
-            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-            var principal = new ClaimsPrincipal(identity);
-
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
-
-            if (user.Role == UserRole.Admin)
+            if (await _userManager.IsInRoleAsync(user, "Admin"))
                 return RedirectToAction("Index", "AdminDashboard");
             else
                 return RedirectToAction("Index", "Home");
@@ -96,7 +95,7 @@ namespace VehicleRentalSystem.Controllers
         [HttpPost]
         public async Task<IActionResult> Logout()
         {
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            await _signInManager.SignOutAsync();
             return RedirectToAction("Login");
         }
 
@@ -110,8 +109,7 @@ namespace VehicleRentalSystem.Controllers
         [HttpGet]
         public async Task<IActionResult> Profile()
         {
-            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-            var user = await _userRepository.GetByIdAsync(userId);
+            var user = await _userManager.GetUserAsync(User);
             if (user == null) return NotFound();
 
             return View(user);
@@ -119,26 +117,32 @@ namespace VehicleRentalSystem.Controllers
 
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> Profile(User model)
+        public async Task<IActionResult> Profile(ApplicationUser model)
         {
-            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-            var user = await _userRepository.GetByIdAsync(userId);
+            var user = await _userManager.GetUserAsync(User);
             if (user == null) return NotFound();
 
-            ModelState.Remove("PasswordHash");
+            ModelState.Remove("UserName");
             ModelState.Remove("Email");
-            ModelState.Remove("Role");
+            ModelState.Remove("PasswordHash");
 
             if (!ModelState.IsValid)
                 return View(model);
 
-            // Only update the fields the user is allowed to change
-            user.Name = model.Name;
-            user.Phone = model.Phone;
+            // Whitelist only the fields we allow editing — same overposting protection as before
+            user.FullName = model.FullName;
+            user.PhoneNumber = model.PhoneNumber;
             user.DLNumber = model.DLNumber;
             user.DLExpiryDate = model.DLExpiryDate;
 
-            await _userRepository.UpdateAsync(user);
+            var result = await _userManager.UpdateAsync(user);
+
+            if (!result.Succeeded)
+            {
+                foreach (var error in result.Errors)
+                    ModelState.AddModelError("", error.Description);
+                return View(user);
+            }
 
             TempData["Success"] = "Profile updated successfully.";
             return RedirectToAction("Profile");

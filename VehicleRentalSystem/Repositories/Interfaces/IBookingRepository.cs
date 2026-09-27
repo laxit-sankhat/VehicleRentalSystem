@@ -12,5 +12,6 @@ namespace VehicleRentalSystem.Repositories.Interfaces
         Task UpdateAsync(Booking booking);
         Task MarkAsReturnedAsync(int bookingId, decimal lateFee);
         Task UpdateOngoingStatusesAsync();
+        Task<bool> HasConflictExcludingBookingAsync(int vehicleId, DateTime startDate, DateTime endDate, int excludeBookingId);
     }
 }

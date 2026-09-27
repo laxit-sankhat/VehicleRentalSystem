@@ -279,5 +279,66 @@ namespace VehicleRentalSystem.Controllers
 
             return stream.ToArray();
         }
+
+        [Authorize(Roles = "Customer")]
+        public async Task<IActionResult> Extend(int id)
+        {
+            var booking = await _bookingRepository.GetByIdAsync(id);
+            if (booking == null) return NotFound();
+
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            if (booking.UserId != userId) return Forbid();
+
+            if (booking.Status != BookingStatus.Ongoing)
+            {
+                TempData["Error"] = "Only ongoing bookings can be extended.";
+                return RedirectToAction("MyBookings");
+            }
+
+            return View(booking);
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Customer")]
+        public async Task<IActionResult> Extend(int id, DateTime newEndDate)
+        {
+            var booking = await _bookingRepository.GetByIdAsync(id);
+            if (booking == null) return NotFound();
+
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            if (booking.UserId != userId) return Forbid();
+
+            if (booking.Status != BookingStatus.Ongoing)
+            {
+                TempData["Error"] = "Only ongoing bookings can be extended.";
+                return RedirectToAction("MyBookings");
+            }
+
+            if (newEndDate <= booking.EndDate)
+            {
+                ModelState.AddModelError("", "New end date must be after the current end date.");
+                return View(booking);
+            }
+
+            bool conflict = await _bookingRepository.HasConflictExcludingBookingAsync(
+                booking.VehicleId, booking.EndDate, newEndDate, booking.Id);
+
+            if (conflict)
+            {
+                ModelState.AddModelError("", "This vehicle is already booked during the requested extension period.");
+                return View(booking);
+            }
+
+            int additionalDays = (newEndDate.Date - booking.EndDate.Date).Days;
+            decimal additionalCost = additionalDays * booking.Vehicle!.PricePerDay;
+
+            booking.EndDate = newEndDate;
+            booking.TotalPrice += additionalCost;
+
+            await _bookingRepository.UpdateAsync(booking);
+
+            TempData["Success"] = $"Booking extended. Additional charge: ₹{additionalCost}";
+            return RedirectToAction("MyBookings");
+        }
     }
 }

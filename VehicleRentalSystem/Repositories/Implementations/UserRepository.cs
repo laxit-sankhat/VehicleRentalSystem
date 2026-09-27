@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using VehicleRentalSystem.Data;
 using VehicleRentalSystem.Models;
 using VehicleRentalSystem.Repositories.Interfaces;
@@ -7,43 +8,32 @@ namespace VehicleRentalSystem.Repositories.Implementations
 {
     public class UserRepository : IUserRepository
     {
-        private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public UserRepository(ApplicationDbContext context)
+        public UserRepository(UserManager<ApplicationUser> userManager)
         {
-            _context = context;
+            _userManager = userManager;
         }
 
-        public async Task<User?> GetByEmailAsync(string email)
+        public async Task<ApplicationUser?> GetByEmailAsync(string email)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            return await _userManager.FindByEmailAsync(email);
         }
 
-        public async Task<User?> GetByIdAsync(int id)
+        public async Task<ApplicationUser?> GetByIdAsync(int id)
         {
-            return await _context.Users.FindAsync(id);
+            return await _userManager.FindByIdAsync(id.ToString());
         }
 
         public async Task<bool> EmailExistsAsync(string email)
         {
-            return await _context.Users.AnyAsync(u => u.Email == email);
-        }
-
-        public async Task AddAsync(User user)
-        {
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+            return await _userManager.FindByEmailAsync(email) != null;
         }
 
         public async Task<bool> AnyAdminExistsAsync()
         {
-            return await _context.Users.AnyAsync(u => u.Role == UserRole.Admin);
-        }
-
-        public async Task UpdateAsync(User user)
-        {
-            _context.Users.Update(user);
-            await _context.SaveChangesAsync();
+            var admins = await _userManager.GetUsersInRoleAsync("Admin");
+            return admins.Any();
         }
     }
 }

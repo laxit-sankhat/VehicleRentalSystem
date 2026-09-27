@@ -24,7 +24,7 @@
         @foreach (var booking in Model)
         {
             <tr>
-                <td>@booking.User?.Name</td>
+                <td>@booking.User?.FullName</td>
                 <td>@booking.Vehicle?.Name</td>
                 <td>@booking.StartDate.ToString("dd MMM yyyy")</td>
                 <td>@booking.EndDate.ToString("dd MMM yyyy")</td>

@@ -11,7 +11,7 @@ namespace VehicleRentalSystem.Models
         [Required]
         [ForeignKey("User")]
         public int UserId { get; set; }
-        public User? User { get; set; }
+        public ApplicationUser? User { get; set; }
 
         [Required]
         [ForeignKey("Vehicle")]

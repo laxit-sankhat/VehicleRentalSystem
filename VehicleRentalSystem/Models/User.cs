@@ -8,7 +8,7 @@ namespace VehicleRentalSystem.Models
         public int Id { get; set; }
 
         [Required, MaxLength(100)]
-        public string? Name { get; set; }
+        public string? FullName { get; set; }
 
         [Required, EmailAddress]
         public string? Email { get; set; }
@@ -20,7 +20,7 @@ namespace VehicleRentalSystem.Models
         public UserRole Role { get; set; }
 
         [Phone]
-        public string? Phone { get; set; }
+        public string? PhoneNumber { get; set; }
 
         // Nullable because Admin doesn't need these
         public string? DLNumber { get; set; }

@@ -86,5 +86,15 @@ namespace VehicleRentalSystem.Repositories.Implementations
             if (bookingsToUpdate.Any())
                 await _context.SaveChangesAsync();
         }
+
+        public async Task<bool> HasConflictExcludingBookingAsync(int vehicleId, DateTime startDate, DateTime endDate, int excludeBookingId)
+        {
+            return await _context.Bookings.AnyAsync(b =>
+                b.Id != excludeBookingId &&
+                b.VehicleId == vehicleId &&
+                b.Status != BookingStatus.Cancelled &&
+                b.StartDate < endDate &&
+                b.EndDate > startDate);
+        }
     }
 }

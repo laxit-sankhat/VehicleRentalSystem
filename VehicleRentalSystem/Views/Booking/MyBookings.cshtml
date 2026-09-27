@@ -6,6 +6,11 @@
 
 <h2>My Bookings</h2>
 
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
 @if (TempData["Error"] != null)
 {
     <div class="alert alert-danger">@TempData["Error"]</div>
@@ -52,6 +57,10 @@ else
                         bool isFinal = booking.Status == VehicleRentalSystem.Models.BookingStatus.Completed ||
                                        booking.Status == VehicleRentalSystem.Models.BookingStatus.Cancelled;
                         bool canCancel = !isFinal && (withinGracePeriod || outside24HourWindow);
+                    }
+                    @if (booking.Status == VehicleRentalSystem.Models.BookingStatus.Ongoing)
+                    {
+                        <a asp-action="Extend" asp-route-id="@booking.Id" class="btn btn-sm btn-outline-warning mb-1">Extend</a>
                     }
                     @if (canCancel)
                     {

@@ -1,0 +1,29 @@
+﻿@model VehicleRentalSystem.Models.Booking
+
+@{
+    ViewData["Title"] = "Extend Booking";
+}
+
+<h2>Extend Booking: @Model.Vehicle?.Name</h2>
+
+<p>Current end date: <strong>@Model.EndDate.ToString("dd MMM yyyy")</strong></p>
+<p>Price per day: ₹@Model.Vehicle?.PricePerDay</p>
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger">
+        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+        {
+            <p class="mb-0">@error.ErrorMessage</p>
+        }
+    </div>
+}
+
+<form asp-action="Extend" asp-route-id="@Model.Id" method="post">
+    <div class="form-group mb-3">
+        <label>New End Date</label>
+        <input type="date" name="newEndDate" class="form-control"
+               min="@Model.EndDate.AddDays(1).ToString("yyyy-MM-dd")" required />
+    </div>
+    <button type="submit" class="btn btn-primary">Confirm Extension</button>
+</form>

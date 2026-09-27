@@ -35,7 +35,7 @@ namespace VehicleRentalSystem.Controllers
                 return View(vehicle);
 
             // Custom validation: RegistrationNumber uniqueness
-            if (await _vehicleRepository.RegistrationNumberExistsAsync(vehicle.RegistrationNumber, vehicle.Id))
+            if (await _vehicleRepository.RegistrationNumberExistsAsync(vehicle.RegistrationNumber))
             {
                 ModelState.AddModelError(nameof(vehicle.RegistrationNumber), "Registration number must be unique.");
             }
